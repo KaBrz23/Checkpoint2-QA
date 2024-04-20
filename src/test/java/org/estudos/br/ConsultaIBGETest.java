@@ -1,8 +1,10 @@
 package org.estudos.br;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
@@ -15,7 +17,7 @@ public class ConsultaIBGETest {
     private static final String DISTRITOS_API_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/distritos/";
 
 
-    @Test
+    @RepeatedTest(5)
     @DisplayName("Teste para consulta única de um estado")
     public void testConsultarEstado() throws IOException {
         // Arrange
@@ -53,5 +55,29 @@ public class ConsultaIBGETest {
         int statusCode = connection.getResponseCode();
         assertEquals(200, statusCode, "O status code da resposta da API deve ser 200 (OK)");
     }
+
+    @ParameterizedTest
+    @CsvSource({"RO", "AC", "AM", "RR", "PA", "AP", "TO", "MA", "PI", "CE", "RN", "PB", "PE", "AL", "SE", "BA", "MG", "ES", "RJ", "SP", "PR", "SC", "RS", "MS", "MT", "GO", "DF"})
+    @DisplayName("Teste para consulta de estados com CSV")
+    public void testConsultarEstados(String sigla) throws IOException {
+        // Arrange
+        String uf = sigla; // Define o estado a ser consultado
+
+        // Act
+        String resposta = ConsultaIBGE.consultarEstado(uf); // Chama o método a ser testado
+
+        // Assert
+        // Verifica se a resposta não está vazia
+        assert !resposta.isEmpty();
+
+        // Verifica se o status code é 200 (OK)
+        HttpURLConnection connection = (HttpURLConnection) new URL(ESTADOS_API_URL + uf).openConnection();
+        int statusCode = connection.getResponseCode();
+        assertEquals(200, statusCode, "O status code da resposta da API deve ser 200 (OK)");
+    }
+
+    
+
+
 
 }
