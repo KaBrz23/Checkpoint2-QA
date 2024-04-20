@@ -1,21 +1,38 @@
 package org.estudos.br;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 public class ConsultaIBGETest {
+    @Mock
+    private HttpURLConnection connectionMock;
     private static final String ESTADOS_API_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/estados/";
     private static final String DISTRITOS_API_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/distritos/";
+    private static final String JSON_RESPONSE = "{\"id\":33,\"sigla\":\"RJ\",\"nome\":\"Rio de Janeiro\",\"regiao\":{\"id\":3,\"sigla\":\"SE\",\"nome\":\"Sudeste\"}}";
 
+    @BeforeEach
+    public void setup() throws IOException {
+        // Inicializa os mocks
+        MockitoAnnotations.openMocks(this);
+
+        // Configura o comportamento do mock
+        InputStream inputStream = new ByteArrayInputStream(JSON_RESPONSE.getBytes());
+        when(connectionMock.getInputStream()).thenReturn(inputStream);
+    }
 
     @RepeatedTest(5)
     @DisplayName("Teste para consulta única de um estado")
@@ -76,8 +93,18 @@ public class ConsultaIBGETest {
         assertEquals(200, statusCode, "O status code da resposta da API deve ser 200 (OK)");
     }
 
-    
+    @Test
+    @DisplayName("Consulta usando o Estado com Mock")
+    public void testConsultarEstadoComMock() throws IOException {
+        String uf = "RJ";
 
+        // Act (Execução do método a ser testado)
+        String response = ConsultaIBGE.consultarEstado(uf);
+
+        // Verificamos se o JSON retornado é o mesmo que o JSON de resposta simulada
+        assertEquals(JSON_RESPONSE, response, "O JSON retornado não corresponde ao esperado.");
+    }
+    
 
 
 }
